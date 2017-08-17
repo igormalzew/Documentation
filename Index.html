@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Документация</title>
+
+    <link href="libs/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="libs/css/fancyScrollbar.css" rel="stylesheet" />
+    <link href="libs/css/robotoGoogleFont.css" rel="stylesheet" />
+    <link href="libs/css/font-awesome.min.css" rel="stylesheet" />
+
+
+    <link href="css/Documentation.css" rel="stylesheet" />
+    <link href="css/DocumentationTree.css" rel="stylesheet" />
+
+
+    <script src="libs/js/jquery.min.js"></script>
+    <script src="libs/js/bootstrap.min.js"></script>
+    <script src="libs/js/angular.min-1.6.4.js"></script>
+    <script src="libs/js/ui-bootstrap-tpls-1.3.0.min.js"></script>
+    <script src="libs/js/angular-locale_ru-ru.js"></script>
+    <script src="libs/js/fancyScrollbar.js"></script>
+
+    <script src="js/DocumentationApp.js"></script>
+    <script src="js/DocumentationController.js"></script>
+
+</head>
+<body>
+
+    <div ng-app="DocumentationApp">
+        <div class="clearfix"></div>
+        <div id="DocumentationController" ng-controller="DocumentationController">
+            <div class="main-loader" ng-hide="mainReady">
+                <div class="loading-indicator"></div>
+            </div>
+            <div ng-show="mainReady" class="main-container ng-hide">
+
+                <div ng-show="Ctrls.ActiveCtrl == Ctrls.DisplayDocs.id"
+                     class="pt-page"
+                     ng-class="Ctrls.ClassList">
+
+                    <div class="display-doc-page">
+                        <div class="display-doc">
+
+                            <div class="display-doc-content">
+
+                                <div ng-init="Ctrls.DisplayDocs.sideBarFilter.availableProducts.init(FakeServer.getCategories())" class="side-bar-filter">
+
+                                    <div id="sideBarFilter" class="block-padding">
+                                        <div class="module module-bottom-padding">
+
+                                            <div class="module-header-padding">
+                                                <div class="bottom-border-gray module-header-margin">
+                                                    <span class="module_header">Жанры</span>
+                                                </div>
+                                            </div>
+
+                                            <div ng-repeat="product in Ctrls.DisplayDocs.sideBarFilter.availableProducts.items track by $index" ng-click="Ctrls.DisplayDocs.sideBarFilter.setActive(product)" class="module-padding cursor item">
+                                                <div class="item-check {{product == Ctrls.DisplayDocs.sideBarFilter.activeProduct ? 'item-radio-selected' : 'item-radio-not-selected'}}"></div>
+                                                <div class="item-padding {{product !== Ctrls.DisplayDocs.sideBarFilter.availableProducts.items[Ctrls.DisplayDocs.sideBarFilter.availableProducts.items.length - 1] ? 'bottom-border-light' : ''}}">
+                                                    <span>{{product.TagName}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                                <div class="doc-main-area">
+
+                                    <div class="main-area-search">
+
+                                        <div class="search-input-module">
+                                            <div class="search-loaders">
+                                                <i class="doc-search-icon"
+                                                   ng-show="!Ctrls.DisplayDocs.search.isLoading"
+                                                   ng-click="Ctrls.DisplayDocs.docs.filterDocs()"
+                                                   uib-tooltip="Поиск" tooltip-placement="top-right" tooltip-append-to-body="true"></i>
+
+                                                <i ng-show="Ctrls.DisplayDocs.search.isLoading" class="doc-loader"></i>
+                                            </div>
+
+                                            <div class="common-input">
+                                                <div class="search-input">{{Ctrls.DisplayDocs.search.value}}</div>
+
+                                                <input ng-change="Ctrls.DisplayDocs.docs.filterDocsWithTimeOut()" class="doc-search" placeholder="Поиск..." ng-model="Ctrls.DisplayDocs.search.value" type="text">
+
+                                                <i ng-show="Ctrls.DisplayDocs.search.value != ''"
+                                                   ng-click="Ctrls.DisplayDocs.search.value = ''; Ctrls.DisplayDocs.docs.filterDocs()"
+                                                   uib-tooltip="Очистить" tooltip-placement="top-right" tooltip-append-to-body="true"
+                                                   class="close-icon cursor" aria-hidden="true">
+                                                </i>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="doc-scroll">
+
+                                        <ul id="docScroll" style="margin-bottom: 0" class="scrollX scrollY without-padding">
+                                            <div id="docScrollViewport" class="viewport">
+                                                <div class="content">
+
+                                                    <div ng-init="Ctrls.DisplayDocs.admin.addNode.accessRoles.init(FakeServer.getAccessRoles())"
+                                                          ng-show="Ctrls.DisplayDocs.docs.items.length > 0 && Ctrls.DisplayDocs.search.value.length <= 1" id="doc-tree" class="doc-tree">
+                                                        <div ng-repeat="data in Ctrls.DisplayDocs.docs.items" class="tree-node" ng-include="'tree_item_renderer.html'"></div>
+                                                    </div>
+
+                                                    <div class="search-result" ng-show="Ctrls.DisplayDocs.search.value.length > 1 && Ctrls.DisplayDocs.search.results.length > 0">
+                                                        <div class="search-result-header">
+                                                            Результаты поиска
+                                                        </div>
+                                                        <div class="search-result-item" ng-repeat="item in Ctrls.DisplayDocs.search.results track by $index">
+                                                            <span ng-click="Ctrls.DisplayDocs.search.nodeClick(item)" class="{{item.isFile ? 'search-result-item-file' : 'search-result-item-category'}}">{{item.name}}</span>
+                                                            <span ng-show="item.path != undefined" class="search-result-item-path">({{item.path}})</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="doc-not-found" ng-show="Ctrls.DisplayDocs.docs.items.length == 0 || Ctrls.DisplayDocs.search.value.length > 1 && Ctrls.DisplayDocs.search.results.length == 0">
+                                                        <span class="doc-not-found-img"></span>
+                                                        <span class="doc-not-found-text">Документы не найдены</span>
+                                                    </div>
+
+                                                </div>
+                                        </ul>
+
+                                    </div>
+
+
+                                    <script type="text/ng-template" id="tree_item_renderer.html">
+
+                                        <div class="tree-node-header">
+                                            <span class="tree-horiz-line"></span>
+                                            <span ng-click="data.isOpen = !data.isOpen" ng-hide="data.isFile" class="{{data.isOpen ? 'tree-open-node-icon' : 'tree-close-node-icon'}}"></span>
+                                            <span ng-click="Ctrls.DisplayDocs.nodeClick(data)" class="tree-node-name {{data.isFile ? 'tree-file-text' : 'tree-folder-text'}}">{{data.name}}</span>
+                                            <div
+                                                 class="document-tools {{Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey ? 'document-tools-visible' : ''}}">
+                                                <div class="document-tools-content">
+
+                                                    <div ng-hide="data.isFile"
+                                                         ng-click="Ctrls.DisplayDocs.admin.setActive(Ctrls.DisplayDocs.admin.addNode.id, data.$$hashKey)"
+                                                         class="document-tools-content-add-icon {{Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.addNode.id ? 'document-tools-content-selected' : ''}}"
+                                                         popover-is-open="Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.addNode.id"
+                                                         uib-popover-template="'addNodeDetail.html'"
+                                                         popover-placement="bottom"
+                                                         popover-append-to-body="true">
+                                                    </div>
+
+                                                    <div ng-hide="data.isFile"
+                                                         ng-click="Ctrls.DisplayDocs.admin.setActive(Ctrls.DisplayDocs.admin.editNode.id, data.$$hashKey)"
+                                                         class="document-tools-content-edit-icon {{Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.editNode.id ? 'document-tools-content-selected' : ''}}"
+                                                         popover-is-open="Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.editNode.id"
+                                                         uib-popover-template="'editNodeDetail.html'"
+                                                         popover-placement="bottom"
+                                                         popover-append-to-body="true">
+                                                    </div>
+
+                                                    <div ng-click="Ctrls.DisplayDocs.admin.setActive(Ctrls.DisplayDocs.admin.deleteNode.id, data.$$hashKey)"
+                                                         class="{{data.isFile ? 'document-tools-content-close-icon-single ' : 'document-tools-content-close-icon '}}
+                         {{Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.deleteNode.id ? 'document-tools-content-selected' : ''}}"
+                                                         popover-is-open="Ctrls.DisplayDocs.admin.activeNode == data.$$hashKey && Ctrls.DisplayDocs.admin.activeAction == Ctrls.DisplayDocs.admin.deleteNode.id"
+                                                         uib-popover-template="'deleteNodeDetail.html'"
+                                                         popover-placement="bottom"
+                                                         popover-append-to-body="true">
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div ng-show="data.children.length > 0 && data.isOpen" class="tree-node-content">
+                                            <div ng-repeat="data in data.children" class="tree-node {{ $last ? 'last-node' : ''}}" ng-include="'tree_item_renderer.html'">
+                                                <div class="tree-node-header">
+                                                    <span class="tree-horiz-line"></span><span class="tree-close-node-icon"></span>
+                                                    <span>{{data.name}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </script>
+
+                                    <script type="text/ng-template" id="addNodeDetail.html">
+                                        <div class="popover-container ">
+
+                                            <div class="module module-bottom-padding">
+
+                                                <div class="module-header-padding">
+                                                    <div class="bottom-border-gray module-header-margin">
+                                                        <span class="module_header">Добавить</span>
+                                                    </div>
+                                                </div>
+
+                                                <div ng-repeat="type in Ctrls.DisplayDocs.admin.addNode.typeOfNode.items track by $index" ng-click="Ctrls.DisplayDocs.admin.addNode.typeOfNode.setActive(type.id)" class="module-padding cursor item">
+                                                    <div class="item-check {{type.id == Ctrls.DisplayDocs.admin.addNode.typeOfNode.activeTypeId ? 'item-radio-selected' : 'item-radio-not-selected'}}"></div>
+                                                    <div class="item-padding {{ $last ? '' : 'bottom-border-light'}}">
+                                                        <span>{{type.name}}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div ng-show="Ctrls.DisplayDocs.admin.addNode.typeOfNode.activeTypeId == 1">
+
+                                                <div style="padding: 10px 20px 20px 20px" class="cursor">
+                                                    <input placeholder="Введите наименование..." style="height: 40px; border-radius: 2px" type="text" ng-model="Ctrls.DisplayDocs.admin.addNode.folderName" class="input-filter form-control" />
+                                                </div>
+
+                                                <div class="module module-bottom-padding">
+
+                                                    <div class="module-header-padding">
+                                                        <div class="bottom-border-gray module-header-margin">
+                                                            <span class="module_header">Отображать</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div ng-repeat="tag in Ctrls.DisplayDocs.admin.addNode.accessRoles.items track by $index" ng-click="tag.isSelected = !tag.isSelected" class="module-padding cursor item">
+                                                        <div class="item-check {{tag.isSelected ? 'item-check-selected' : 'item-check-not-selected'}}"></div>
+                                                        <div class="item-padding {{ $last ? '' : 'bottom-border-light'}}">
+                                                            <span>{{tag.TagName}}</span>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <div ng-show="Ctrls.DisplayDocs.admin.addNode.typeOfNode.activeTypeId == 2" class="upload-area">
+
+                                                <button class="upload-button">Загрузить</button>
+
+                                            </div>
+
+
+                                            <div class="doc-admin-btns">
+                                                <a class="doc-admin-btns-left" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Закрыть</a>
+                                                <a class="doc-admin-btns-right" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Ok</a>
+                                            </div>
+                                        </div>
+                                    </script>
+
+                                    <script type="text/ng-template" id="editNodeDetail.html">
+                                        <div class="popover-container ">
+
+                                            <div class="doc-admin-btns">
+                                                <a class="doc-admin-btns-left" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Закрыть</a>
+                                                <a class="doc-admin-btns-right" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Ok</a>
+                                            </div>
+                                        </div>
+                                    </script>
+
+                                    <script type="text/ng-template" id="deleteNodeDetail.html">
+                                        <div class="popover-container ">
+                                            <div class="doc-admin-btns">
+                                                <a class="doc-admin-btns-left" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Закрыть</a>
+                                                <a class="doc-admin-btns-right" ng-click="Ctrls.DisplayDocs.admin.clearActive()">Ok</a>
+                                            </div>
+                                        </div>
+                                    </script>
+
+
+                                </div>
+
+
+                            </div>
+
+                            <div ng-hide="Ctrls.DisplayDocs.admin.activeNode == null && Ctrls.DisplayDocs.admin.activeAction == null" class="block-screen"></div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+</body>
+</html>
